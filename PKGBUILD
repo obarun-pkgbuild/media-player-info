@@ -4,21 +4,36 @@
 # 						Contributor: Marti Raudsepp <marti@juffo.org>
 
 pkgname=media-player-info
-pkgver=22
+pkgver=23
 pkgrel=2
 pkgdesc="Data files describing media player capabilities, for post-HAL systems"
 arch=('x86_64')
 license=('BSD')
-url="http://cgit.freedesktop.org/media-player-info/"
+url="https://www.freedesktop.org/wiki/Software/media-player-info/"
 depends=()
-makedepends=('python')
-source=(http://www.freedesktop.org/software/media-player-info/${pkgname}-$pkgver.tar.gz)
-sha256sums=('7ee7d7712834860533c46b16947238ef5b5d72f394fa7fb52783a15fba7b2336')
+makedepends=('python' 'git')
+_commit=1ad540c1781c4c840f74344f67340a74bd458f49  # tags/23^0
+source=("git+https://anongit.freedesktop.org/git/media-player-info#commit=$_commit")
+sha256sums=('SKIP')
 validpgpkeys=('6DD4217456569BA711566AC7F06E8FDE7B45DAAC') # Eric Vidal
 install=media-player-info.install
 
+pkgver() {
+  cd $pkgname
+  git describe --tags | sed 's/-/+/g'
+}
+prepare() {
+  cd $pkgname
+  NOCONFIGURE=1 ./autogen.sh
+}
+
+check() {
+  cd $pkgname
+  make check
+}
+
 build() {
-  cd ${pkgname}-$pkgver
+  cd "${pkgname}"
 
   ./configure --prefix=/usr \
       --with-udevdir=/usr/lib/udev
@@ -26,7 +41,7 @@ build() {
 }
 
 package() {
-  cd "${pkgname}-$pkgver"
+  cd "${pkgname}"
   make DESTDIR="$pkgdir" install
 
   install -d "$pkgdir/usr/share/licenses/${pkgname}"
